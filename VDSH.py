@@ -8,7 +8,7 @@ from utils import *
 ####################################################################################################################
 
 class VDSH(object):
-    def __init__(self, sess, latent_dim, n_feas, keep_prob=1.0):
+    def __init__(self, sess, latent_dim, n_feas):
         self.sess = sess
         self.n_feas = n_feas
         
@@ -16,8 +16,6 @@ class VDSH(object):
         
         n_batches = 1
         self.n_batches = n_batches
-
-        self.keep_prob = keep_prob
         
         self.hidden_dim = 500
         self.build()
@@ -29,7 +27,8 @@ class VDSH(object):
             word_indice = np.where(doc > 0)[0]
             z = self.sess.run(self.z_mean, 
                            feed_dict={ self.input_bow: doc.reshape((-1, self.n_feas)),
-                                       self.input_bow_idx: word_indice})
+                                       self.input_bow_idx: word_indice,
+                                       self.keep_prob: 1.0})
             z_data.append(z[0])
         return z_data
 
@@ -50,7 +49,7 @@ class VDSH(object):
         self.input_bow_idx = tf.placeholder(tf.int32, [None], name="Input_bow_Idx")
         
         self.kl_weight = tf.placeholder(tf.float32, name="KL_Weight")
-        self.keep = tf.placeholder(tf.float32, name="KL_Weight")
+        self.keep_prob = tf.placeholder(tf.float32, name="KL_Weight")
 
         ## Inference network q(z|x)
         self.z_enc_1 = Dense(self.hidden_dim, activation='relu')(self.input_bow)

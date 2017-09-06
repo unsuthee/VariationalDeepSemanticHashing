@@ -18,7 +18,6 @@ class VDSH_S(object):
         
         n_batches = 1
         self.n_batches = n_batches
-
         self.use_cross_entropy = use_cross_entropy
         
         self.hidden_dim = 500
@@ -62,7 +61,8 @@ class VDSH_S(object):
         self.labels = tf.placeholder(tf.float32, [1, self.n_tags], name="Input_Labels")
         
         self.kl_weight = tf.placeholder(tf.float32, name="KL_Weight")
-        self.keep_prob = tf.placeholder(tf.float32, name="KL_Weight")
+        self.tag_weight = tf.placeholder(tf.float32, name="Tag_Weight")
+        self.keep_prob = tf.placeholder(tf.float32, name="Keep_Prob")
 
         ## Inference network q(z|x)
         self.z_enc_1 = Dense(self.hidden_dim, activation='relu')(self.input_bow)
@@ -88,4 +88,4 @@ class VDSH_S(object):
         self.reconstr_err = self.calc_reconstr_error()
         self.kl_loss = self.calc_KL_loss()
         
-        self.cost = self.reconstr_err + self.kl_weight * self.kl_loss + self.pred_loss
+        self.cost = self.reconstr_err + (self.kl_weight * self.kl_loss) + (self.tag_weight * self.pred_loss)
