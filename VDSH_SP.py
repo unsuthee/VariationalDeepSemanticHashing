@@ -20,7 +20,7 @@ class VDSH_SP(object):
         self.n_batches = n_batches
         self.use_cross_entropy = use_cross_entropy
         
-        self.hidden_dim = 500
+        self.hidden_dim = 1000
         self.build()
     
     def transform(self, docs):
