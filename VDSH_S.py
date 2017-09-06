@@ -8,7 +8,7 @@ from utils import *
 ####################################################################################################################
 
 class VDSH_S(object):
-    def __init__(self, sess, latent_dim, n_feas, n_tags, keep_prob=1.0):
+    def __init__(self, sess, latent_dim, n_feas, n_tags, use_cross_entropy=True):
         self.sess = sess
         self.n_feas = n_feas
         
@@ -19,7 +19,7 @@ class VDSH_S(object):
         n_batches = 1
         self.n_batches = n_batches
 
-        self.keep_prob = keep_prob
+        self.use_cross_entropy = use_cross_entropy
         
         self.hidden_dim = 500
         self.build()
@@ -31,7 +31,8 @@ class VDSH_S(object):
             word_indice = np.where(doc > 0)[0]
             z = self.sess.run(self.z_mean, 
                            feed_dict={ self.input_bow: doc.reshape((-1, self.n_feas)),
-                                       self.input_bow_idx: word_indice})
+                                       self.input_bow_idx: word_indice,
+                                       self.keep_prob: 1.0})
             z_data.append(z[0])
         return z_data
 
@@ -42,11 +43,15 @@ class VDSH_S(object):
         return -tf.reduce_sum(tf.log(tf.maximum(p_x_i_scores0 * weight_scores0, 1e-10)))
 
     def calc_KL_loss(self):
-        return -0.5 * tf.reduce_sum(tf.reduce_sum(1 + self.z_log_var - tf.square(self.z_mean) 
-                                              - tf.exp(self.z_log_var), axis=1))
+            return -0.5 * tf.reduce_sum(tf.reduce_sum(1 + self.z_log_var - tf.square(self.z_mean) 
+                                                      - tf.exp(self.z_log_var), axis=1))
     
     def calc_Pred_loss(self):
-        return tf.reduce_sum(tf.pow(self.tag_prob - self.labels, 2), axis=1)
+        if self.use_cross_entropy:
+            return tf.reduce_sum(tf.pow(self.tag_prob - self.labels, 2), axis=1)
+        else:
+            return -tf.reduce_sum(self.labels * tf.log(tf.maximum(self.tag_prob,1e-10))
+                           + (1-self.labels) * tf.log(tf.maximum(1 - self.tag_prob, 1e-10)), axis=1)
     
     def build(self):
         # BOW
@@ -57,7 +62,7 @@ class VDSH_S(object):
         self.labels = tf.placeholder(tf.float32, [1, self.n_tags], name="Input_Labels")
         
         self.kl_weight = tf.placeholder(tf.float32, name="KL_Weight")
-        self.keep = tf.placeholder(tf.float32, name="KL_Weight")
+        self.keep_prob = tf.placeholder(tf.float32, name="KL_Weight")
 
         ## Inference network q(z|x)
         self.z_enc_1 = Dense(self.hidden_dim, activation='relu')(self.input_bow)
@@ -78,9 +83,9 @@ class VDSH_S(object):
         self.p_x_i = tf.squeeze(tf.nn.softmax(self.e))
         
         self.tag_prob = Dense(self.n_tags, activation='sigmoid')(self.z_sample)
-        self.mse = self.calc_Pred_loss()
+        self.pred_loss = self.calc_Pred_loss()
         
         self.reconstr_err = self.calc_reconstr_error()
         self.kl_loss = self.calc_KL_loss()
         
-        self.cost = self.reconstr_err + self.kl_weight * self.kl_loss + self.mse
+        self.cost = self.reconstr_err + self.kl_weight * self.kl_loss + self.pred_loss
