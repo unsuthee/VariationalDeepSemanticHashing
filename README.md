@@ -16,6 +16,7 @@ The component collapsing is common in variational autoencoder framework where th
 [1] https://arxiv.org/abs/1602.02282
 
 # Bibtex
+'''
 @inproceedings{Chaidaroon:2017:VDS:3077136.3080816,
  author = {Chaidaroon, Suthee and Fang, Yi},
  title = {Variational Deep Semantic Hashing for Text Documents},
@@ -33,3 +34,4 @@ The component collapsing is common in variational autoencoder framework where th
  address = {New York, NY, USA},
  keywords = {deep learning, semantic hashing, variational autoencoder},
 }
+'''
