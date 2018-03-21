@@ -3,6 +3,9 @@ The implementation of the models and experiments of [Variational Deep Semantic H
 
 Author: Suthee Chaidaroon
 
+# Platform
+I use python 2.7 and Tensorflow version 1.3
+
 # Prepare dataset
 The model expects the input document to be in a bag-of-words format. I provided sample dataset under dataset directory. If you want to use a new text collection, the input document collection to our model should be a matrix where each row represents one document and each column represents one unique word in the corpus. 
 
