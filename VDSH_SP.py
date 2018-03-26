@@ -55,7 +55,7 @@ class VDSH_SP(object):
             return z_kl_loss + v_kl_loss
     
     def calc_Pred_loss(self):
-        if self.use_cross_entropy:
+        if not self.use_cross_entropy:
             return tf.reduce_sum(tf.pow(self.tag_prob - self.labels, 2), axis=1)
         else:
             return -tf.reduce_sum(self.labels * tf.log(tf.maximum(self.tag_prob,1e-10))
